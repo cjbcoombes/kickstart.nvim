@@ -84,6 +84,22 @@ I hope you enjoy your Neovim journey,
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
 
+local opts = { noremap = true, silent = true }
+local modes = { 'n', 'x', 'o' }
+
+vim.keymap.set(modes, 'n', 'j', opts)
+vim.keymap.set(modes, 'e', 'k', opts)
+vim.keymap.set(modes, 'j', 'n', opts)
+vim.keymap.set(modes, 'k', 'e', opts)
+vim.keymap.set(modes, 'l', 'i', opts)
+vim.keymap.set(modes, 'i', 'l', opts)
+vim.api.nvim_del_keymap('o', 'i') -- Remove "i" in operator-pending mode
+vim.api.nvim_del_keymap('x', 'i') -- Remove "i" in visual mode
+-- vim.keymap.set(modes, 'vi', 'vl', opts)
+-- vim.keymap.set(modes, 'vl', 'vi', opts)
+-- vim.keymap.set(modes, 'N', 'J', opts)
+-- vim.keymap.set(modes, 'J', 'N', opts)
+
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -91,7 +107,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -166,6 +182,7 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = '[E] Open diagnostic float' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -186,9 +203,9 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 --
 --  See `:help wincmd` for a list of all window commands
 vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
-vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
-vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
-vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+vim.keymap.set('n', '<C-i>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
+vim.keymap.set('n', '<C-n>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
+vim.keymap.set('n', '<C-e>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -320,7 +337,7 @@ require('lazy').setup({
         { '<leader>s', group = '[S]earch' },
         { '<leader>w', group = '[W]orkspace' },
         { '<leader>t', group = '[T]oggle' },
-        { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        -- { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
       },
     },
   },
@@ -547,6 +564,9 @@ require('lazy').setup({
           --  For example, in C this would take you to the header.
           map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
 
+          -- I added this
+          map('<leader>h', vim.lsp.buf.hover, '[H]over for info')
+
           -- The following two autocommands are used to highlight references of the
           -- word under your cursor when your cursor rests there for a little while.
           --    See `:help CursorHold` for information about when this is executed
@@ -615,9 +635,16 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        -- clangd = {},
+        clangd = {
+          cmd = { 'clangd', '--query-driver=/home/cjbcoombes/.nix-profile/bin/gcc' },
+        },
         -- gopls = {},
         -- pyright = {},
+        hls = {
+          cmd = { 'haskell-language-server-wrapper', '--lsp' },
+          filetypes = { 'haskell' },
+        },
+        pylsp = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -654,11 +681,18 @@ require('lazy').setup({
 
       -- You can add other tools here that you want Mason to install
       -- for you, so that they are available from within Neovim.
-      local ensure_installed = vim.tbl_keys(servers or {})
+      local ensure_installed = vim.tbl_filter(function(server)
+        return server ~= 'hls' -- Exclude `hls` from being managed by Mason
+      end, vim.tbl_keys(servers or {}))
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
       })
-      require('mason-tool-installer').setup { ensure_installed = ensure_installed }
+      require('mason-tool-installer').setup {
+        ensure_installed = ensure_installed,
+      }
+
+      -- Mason seems to hate me so I have to do this one manually
+      require('lspconfig')['hls'].setup(servers['hls'])
 
       require('mason-lspconfig').setup {
         handlers = {
@@ -931,7 +965,7 @@ require('lazy').setup({
   -- require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
   -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
