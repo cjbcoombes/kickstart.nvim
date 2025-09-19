@@ -84,22 +84,6 @@ I hope you enjoy your Neovim journey,
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
 
-local opts = { noremap = true, silent = true }
-local modes = { 'n', 'x', 'o' }
-
-vim.keymap.set(modes, 'n', 'j', opts)
-vim.keymap.set(modes, 'e', 'k', opts)
-vim.keymap.set(modes, 'j', 'n', opts)
-vim.keymap.set(modes, 'k', 'e', opts)
-vim.keymap.set(modes, 'l', 'i', opts)
-vim.keymap.set(modes, 'i', 'l', opts)
-vim.api.nvim_del_keymap('o', 'i') -- Remove "i" in operator-pending mode
-vim.api.nvim_del_keymap('x', 'i') -- Remove "i" in visual mode
--- vim.keymap.set(modes, 'vi', 'vl', opts)
--- vim.keymap.set(modes, 'vl', 'vi', opts)
--- vim.keymap.set(modes, 'N', 'J', opts)
--- vim.keymap.set(modes, 'J', 'N', opts)
-
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -203,9 +187,9 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 --
 --  See `:help wincmd` for a list of all window commands
 vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
-vim.keymap.set('n', '<C-i>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
-vim.keymap.set('n', '<C-n>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
-vim.keymap.set('n', '<C-e>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
+vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
+vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -636,7 +620,7 @@ require('lazy').setup({
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
         clangd = {
-          cmd = { 'clangd', '--query-driver=/home/cjbcoombes/.nix-profile/bin/gcc' },
+          cmd = { 'clangd', '--log=verbose' },
         },
         -- gopls = {},
         -- pyright = {},
